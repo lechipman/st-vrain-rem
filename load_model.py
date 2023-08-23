@@ -11,6 +11,7 @@ import zipfile
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import numpy as np
 from riverrem.REMMaker import REMMaker, clear_osm_cache
 import requests
 import rioxarray as rxr
@@ -216,7 +217,7 @@ def dtm_clip(site_name, site_dtm, clip_gdf, is_lidar):
       The clipped raster dataset.
   """
 
-    # If lidar file, set path and reproject
+    # If lidar file, set path, and reproject
     if is_lidar == True:  
         raster_path=os.path.join('{}'.format(site_name), 
                                  '{}_lidar_dtm.tif'.format(site_name))
@@ -344,7 +345,7 @@ def run_rem_maker_lidar(site_name, k=100):
 
 
 # Function to plot elevation models
-def plot_model(model, title, coarsen, ax, xpix=1, ypix=1):
+def plot_model(model, title, cbar_label, coarsen, fig, ax, cmap='terrain', xpix=1, ypix=1):
     """
     Creates a plot of the DTM or REM.
     
@@ -352,16 +353,18 @@ def plot_model(model, title, coarsen, ax, xpix=1, ypix=1):
     ------------
     model: dataarray
         The dataarray to plot.
-
     title: str
-        The title of the plot.
-    
+        The title of the plot. 
+    cbar_label: str
+        The label for the colorbar.
+    cmap: str
+        A matplotlib colormap.
     xpix, ypix: int, int
-        The number of pixels to average with coarsen function.
-        
+        The number of pixels to average with coarsen function.    
     coarsen: boolean
         True = coarsen data, False = do not coarsen.
-        
+    fig: figure
+        A matplotlib axes object.    
     ax: axes
         A matplotlib axes object.
 
@@ -376,15 +379,18 @@ def plot_model(model, title, coarsen, ax, xpix=1, ypix=1):
     ax.set_xticks([])
     ax.set_yticks([])
 
-    # If DTM, coarsen
+    # If true, coarsen
     if coarsen == True:
         model = (model.coarsen(x=xpix, y=ypix, boundary='trim')
                  .mean().squeeze())
     # Plot DTM
-    model.plot(ax=ax)
-
-    # Add title
-    ax.set_title(title, fontsize=14) 
+    im=model.plot(ax=ax, add_colorbar=False, robust=True, cmap=cmap,
+                  vmin=np.nanmin(model), vmax=np.nanmax(model))
+    
+    # Add title and colorbar labe;
+    ax.set_title(title, fontsize=18)
+    cbar = fig.colorbar(im)
+    cbar.set_label(cbar_label, fontsize=16)
     ax.legend('off')
     ax.axis('off')
 
@@ -422,9 +428,9 @@ def plot_hists(model, titles, main_title, color, fig, ax):
     """
     
     model.plot.hist(color=color, bins=20, ax=ax)
-    ax.set_title(titles, fontsize=12)
+    ax.set_title(titles, fontsize=16)
     ax.set(xlabel=None)
-    fig.suptitle(main_title, fontsize=16)
-    fig.supxlabel('Elevation (m)')
-    fig.supylabel('Frequency')
+    fig.suptitle(main_title, fontsize=20)
+    fig.supxlabel('Elevation (m)', fontsize=16)
+    fig.supylabel('Frequency', fontsize=16)
 
