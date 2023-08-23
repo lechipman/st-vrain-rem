@@ -50,7 +50,8 @@ def load_dtm(site_name, data_url, file_name):
         os.makedirs(data_dir)
 
     if (not os.path.exists(data_path)) or override_cache:
-        print('{} does not exist. Downloading...'.format(data_path))
+        print('{} does not exist. Downloading...please be patient '
+              'the download may take awhile'.format(data_path))
         # Download full data file as zipfile
         response = requests.get(data_url)
 
@@ -220,21 +221,23 @@ def dtm_clip(site_name, site_dtm, clip_gdf, is_lidar):
     # If lidar file, set path, and reproject
     if is_lidar == True:  
         raster_path=os.path.join('{}'.format(site_name), 
-                                 '{}_lidar_dtm.tif'.format(site_name))
+                                 '{}_lidar_clipped_dtm.tif'.format(site_name))
         site_dtm = site_dtm.rio.reproject("EPSG:4326")
     
     # else, if uav file, set path but don't reproject
     else:
         raster_path=os.path.join('{}'.format(site_name), 
-                                 '{}_dtm.tif'.format(site_name))   
+                                 '{}_clipped_dtm.tif'.format(site_name))   
     
     clipped_dtm = (site_dtm
                    .squeeze()
                    .rio.clip(clip_gdf.geometry, crs=clip_gdf.crs))
     
-    # Save the clipped lidar dtm as raster for use in RiverREM function
+    # Save the clipped lidar or uav dtm as raster for use in RiverREM function
     clipped_dtm.rio.to_raster(raster_path)
     
+    # Returns the clipped lidar or uav dtm for plotting (this is not the same as
+    # loading the clipped dtm saved to file in step above, tho contents are the same
     return clipped_dtm
 
 
@@ -260,13 +263,13 @@ def run_rem_maker(site_name, k=100):
     
     # Input the DTM file path and desired output directory
     override_cache = False
-    uav_dtm_path = os.path.join(site_name, ('{}_dtm.tif').format(site_name))
+    uav_dtm_path = os.path.join(site_name, ('{}_clipped_dtm.tif').format(site_name))
     uav_out_dir = os.path.join(site_name, 'remmaker')
     if (not os.path.exists(uav_out_dir)) or override_cache:
             print('{} does not exist. Creating...'.format(uav_out_dir))
             os.makedirs(uav_out_dir)
     uav_rem_path = os.path.join(uav_out_dir, 
-                                  ('{}_dtm_REM.tif').format(site_name))
+                                  ('{}_clipped_dtm_REM.tif').format(site_name))
 
     # Run the REMMaker if the path to the REM does not already exist
     if (not os.path.exists(uav_rem_path)) or override_cache:
@@ -311,13 +314,13 @@ def run_rem_maker_lidar(site_name, k=100):
     
     # Input the DTM file path and desired output directory
     override_cache = False
-    lidar_dtm_path = os.path.join(site_name, '{}_lidar_dtm.tif'.format(site_name))
+    lidar_dtm_path = os.path.join(site_name, '{}_lidar_clipped_dtm.tif'.format(site_name))
     lidar_out_dir = os.path.join(site_name, 'remmaker_lidar')
     if (not os.path.exists(lidar_out_dir)) or override_cache:
             print('{} does not exist. Creating...'.format(lidar_out_dir))
             os.makedirs(lidar_out_dir)
     lidar_rem_path = os.path.join(lidar_out_dir, 
-                                  ('{}_lidar_dtm_REM.tif').format(site_name))
+                                  ('{}_lidar_clipped_dtm_REM.tif').format(site_name))
 
     # Run the REMMaker if the path to the REM does not already exist
     if (not os.path.exists(lidar_rem_path)) or override_cache:
