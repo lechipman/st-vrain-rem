@@ -1,16 +1,18 @@
-# Watershed Project Repository
+# St-Vrain-REM Repository
 
-This is the repository for Julia and Lindsay's Earth Analytics Graduate Certificate Project (Spring-Summer 2023).
+This is the repository for Julia Soczak's and Lindsay Chipman's Earth Analytics Graduate Certificate Project (Spring-Summer 2023).
 
-Find our completed blog post at watershed_project.html or run it yourself with the watershed_project_summer2023 jupyter notebook.
+Find our completed blog post at 'taking-the-low-road-blog.html' or run it yourself with the jupyter notebook, 'taking-the-low-road-blog.ipynb'.
 
 ## Summary
-This repositiory contains initial code, data, and instructions to demonstrate an expoloratory effort in using Digital Terrain Models (DTM's) saved in GitHub and running the REMMaker tool in the [RiverREM](https://github.com/OpenTopography/RiverREM) python library to generate a Relative Elevation Model (REM) over one of five study sites (Highway 93, Boulder, CO) for the purposes of floodplain mapping. The overall goal of the project is to create and compare REMs created from the RiverREM library and the [Colorado Hazard Mapping](https://coloradohazardmapping.com/) tool in ArcGIS. When complete, this project will provide an open, reporducible method to create REMs from existing DTMs. It will also compare the REMs created from DTMs generated from drone imagery with those created from LiDAR. This repository will provide information on the best ways to create REMs in terms of accuracy as well as effort, resources, etc.
+This repositiory contains the code, data, and instructions to demonstrate an expoloratory effort in using Relative Elevation Models (REMs) to investigate floodplain connectivity at five study sites in the St. Vrain Basin. The REMs were created from Digital Elevation Models (DTMs) generated with two different data sources (drone or Unmanned Aerial Vehicles [UAV] and Light Detection and Ranging [LiDAR] data) and two different tools (the [Colorado Hazard Mapping](https://coloradohazardmapping.com/) tool in ArcGIS and the REMMaker tool [RiverREM](https://github.com/OpenTopography/RiverREM) python library).
+
+The overall goal of the project was to create and compare REMs created with the two different data sources and tools and to use the REMs to visualize how connected floodplains mitigate the impacts of heavy flooding.
 
 ## Background
-A connected, functional floodplain retains water during periods of high flow and releases it back into the stream when flows are low. Reduced connectivity results in greater magnitude of flood events and vulnerability of surrounding ecosystems to drought. Climate change is causing higher peak flows and longer dry periods, potentially increasing the importance of maintaining and restoring floodplain connectivity, as restoration that increases floodplain connectivity could help reduce the magnitude of flood and drought events.  Therefore, understanding a river’s geomorphology is imperative to water resource  management and preparing for potential natural disasters.
+A floodplain is the area adjacent to a stream that becomes inundated with water when a flood occurs. This space allows the flood to spread out and release energy and suspended objects such as sediment, logs, and debris. By reducing the flow of water down the stream corridor, floodplains effectively mitigate destruction to buildings and other infrastructure downstream (FISRWG 1998). BUT this can only happen if the floodplain is "available" to the stream i.e., if the area around the stream is low enough to be inundated when floodwaters occur. If a floodplain is situated above the highest flow of water, it will not be accessible by the stream - we call this a disconnected floodplain (American Rivers 2016).
 
-REMs are DTMs that are normalized to the elevation of a channel. They can be useful to visualize fluvial landforms that may be hard to discern from an aerial image or DTM alone. Information provided by REMs can be used to plan and prioritize restoration projects that  improve watershed health. By analyzing REMs of target sites in the St. Vrain Basin in Boulder, CO, we hope to provide information on  floodplain connectivity for use in restoration work in the watershed as well as information on the pros and cons of each method (UAV- vs. LiDAR-derived imagery) for creating REMs. This information can be used to guide future monitoring workflows and budget.
+REMs are DTMs that are normalized to the elevation of a channel. They can be useful to visualize fluvial landforms that may be hard to discern from an aerial image or DTM alone. Information provided by REMs can be used to plan and prioritize restoration projects that improve watershed health. By analyzing REMs of target sites in the St. Vrain Basin in Boulder, CO, we hope to provide information on floodplain connectivity for use in restoration work in the watershed as well as information on the pros and cons of each method (UAV- vs. LiDAR-derived imagery) for creating REMs. This information can be used to guide future monitoring workflows and budget.
 
 ## Collaborators and Acknowledgements
 Julia Sobczak, Lindsay Chipman, Matthew Bitters with the [Watershed Center](https://watershed.center/), and University of Colorado [Earth Lab](https://earthlab.colorado.edu/)
@@ -25,27 +27,23 @@ How to install your environment
   ```
 
 ## Data Access
-  * For this assignment, we hosted preprocesed data on a github release. Data was from the [Watershed Center](https://watershed.center/)
+  * We hosted our preprocesed data on a github release and on zenodo. All the UAV data was from the [Watershed Center](https://watershed.center/), and the LiDAR data was obtained from [Colorado Hazard Mapping](https://coloradohazardmapping.com/).
   
 ## Workflow
  * Follow the environment installation instructions above.
- * Fork this repository and clone it to your local computer to run the code fully; NOTE: for the .html file to save properly, please create a subfolder in your home computer called 'earth-analytics' and fork the repository to this subfolder so the path to the local repository is as follows: home/earth-analytics/watershed-project 
-
- * Open watershed_project_Spring23.ipynb from the main directory ([watershed-project](https://github.com/lechipman/watershed-project)).
+ * Fork this repository and clone it to your local computer to run the code fully; NOTE: for the .html file to save properly, please create a subfolder in your home directory called 'earth-analytics' and fork the repository to this subfolder so the path to the local repository is as follows: home/earth-analytics/st-vrain-rem 
+ * Open the jupyter notebook 'taking-the-low-road-blog.ipynb from the main directory [st-vrain-rem](https://github.com/JuliaSobczak/st-vrain-rem/tree/main).
  * Run the jupyter notebook by selecting Run All.
- * The code will import the needed libraries, including RiverREM and plot_site_map.py, as well as the data (including the DTM and site coordinates hosted on github, see data access above) to run from start to finish.
- * The results show plots of the study sites and plots of a preliminary DTM and REM for one of the five study sites.
+ * The code will import the needed libraries, including RiverREM, plot_site_map.py, and load_model.py, as well as the images and data to run from start to finish. The UAV DTMs and REMs and predowloaded LiDAR data are hosted on [zenodo](https://zenodo.org/record/8218054).
+ * The results show the high resolution UAV REMs for each of the five sites. We also create raster plots and histograms for UAV and LiDAR REMs at two sites that contrast in terms of connectivity and complexity. Finally, the notebook runs a flood simulation at the two sites to visualize how connected and disconnected floodplains compare in their ability to store water during flooding.
  * The code also downloads the notebook as a .html file.
 
+
 ## File Descriptions
-* UAV_gps_coords.csv : the coordinates of the study sites
-* plot_model.ipynb: jupyter notebook with code to plot the elevation models
-* plot_mode.py : python file with code to plot the elevation models
-* plot_site_map.ipynb: jupyter notebook with code to plot the study sites with two methods
 * plot_site_map.py : python file with code to plot the study sites
-* streamline_js_highway93.zip: shapefile of the streamline (not used in the current notebook version)
-* watershed_project_summer23.ipynb : jupyter notebook with project code and current progress for summer semester, 2023
-* watershed_project_summer23.html : blog post with project overview and current progress summer semester, 2023
-* watershed_project_Spring23.ipynb : jupyter notebook with project code and current progress as of spring semester, 2023.
+* load_model.py : python file with code to load the data, plot the elevation models and histograms, and create parameters to run the flood simulation
+* taking-the-low-road-blog.ipynb : jupyter notebook with project code to create all the visualizations, run the flood simulation, and export the content as an html file. 
+* taking-the-low-road-blog.html : blog post with our final project results.
+* media: directory that contains images displayed in the final notebook and blog post
 
 [![DOI](https://zenodo.org/badge/633148424.svg)](https://zenodo.org/badge/latestdoi/633148424)
