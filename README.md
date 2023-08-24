@@ -46,4 +46,5 @@ How to install your environment
 * taking-the-low-road-blog.html : blog post with our final project results.
 * media: directory that contains images displayed in the final notebook and blog post
 
-[![DOI](https://zenodo.org/badge/633148424.svg)](https://zenodo.org/badge/latestdoi/633148424)
+[![DOI](https://zenodo.org/badge/679505515.svg)](https://zenodo.org/badge/latestdoi/679505515)
+
