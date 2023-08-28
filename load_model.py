@@ -6,14 +6,18 @@
 
 # Imports
 import os
+import glob
 import pathlib
+import re
+import requests
 import zipfile
 
 import geopandas as gpd
+from IPython.display import clear_output
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 from riverrem.REMMaker import REMMaker, clear_osm_cache
-import requests
 import rioxarray as rxr
 
 
@@ -437,3 +441,114 @@ def plot_hists(model, titles, main_title, color, fig, ax):
     fig.supxlabel('Elevation (m)', fontsize=16)
     fig.supylabel('Frequency', fontsize=16)
 
+# Function to create inundation dataarrays
+def flood_map(threshold_values, uav_rem, lidar_rem):
+    """Creates lists of floodmaps and inundated area
+    
+    Parameters
+    ------------
+    threshold_values: list
+        A list of the water level threshold values (int).
+    uav_rem: dataarray
+        Dataarray of the UAV REM for one site.
+    lidar_rem: dataarray
+        Dataarray of the LiDAR REM for one site.
+        
+    Returns
+    -----------
+    flood_dictionary: dictionary
+        A dictionary containing lists of uav and lidar floodmaps 
+        and inundated areas.
+    """
+    threshold_lidar_das = []
+    threshold_uav_das = []
+    uav_area_list = []
+    lidar_area_list = []
+    
+    for threshold in threshold_values:
+        # The threshold da is all points > threshold
+        threshold_uav_da=(uav_rem.where(uav_rem > threshold))
+        threshold_lidar_da=(lidar_rem.where(lidar_rem > threshold))
+        
+        # Add threshold da to list
+        threshold_uav_das.append(threshold_uav_da)
+        threshold_lidar_das.append(threshold_lidar_da)
+        
+        # Compute pixel area based on resolution - use lidar_dtm values for now 2.5 ft = 0.762 m
+        uav_pixel_area = 0.02085**2
+        lidar_pixel_area =  0.762**2
+
+        # Compute area inundated ( nan values*pixel area) and add to list- uav
+        total_uav_count = uav_rem.size
+        valid_uav_count = int(threshold_uav_da.count().compute())
+        uav_area_list.append(
+            (total_uav_count - valid_uav_count)*uav_pixel_area)
+
+        # Compute area inundated - lidar
+        total_lidar_count = lidar_rem.size
+        valid_lidar_count = int(threshold_lidar_da.count().compute())
+        lidar_area_list.append(
+            (total_lidar_count - valid_lidar_count)*lidar_pixel_area)
+
+        # Create a dictionary to store the lists of dataarrays
+        flood_dictionary = {'threshold_uav_das': threshold_uav_das,
+                     'threshold_lidar_das': threshold_lidar_das,
+                     'uav_area_list': uav_area_list,
+                     'lidar_area_list': lidar_area_list}
+    
+    return flood_dictionary
+
+
+# Function to sort image files numerically
+def numericalSort(value):
+    """Sorts files by name numerically"""
+    
+    numbers = re.compile(r'(\d+)')
+    parts = numbers.split(value)
+    parts[1::2] = map(int, parts[1::2])
+    return parts
+
+def save_frames(site_name, site_dictionary):
+    """Creates a gif of flood simulation from plot frames
+    
+    Parameters
+    -------------
+    site_name: str
+        Name of the site.
+    site_dictionary: dictionary
+        Dictionary with lists of REM dataarrays at threshold values.
+        
+    Returns
+    ------------
+    gif_path: path
+        Path to the flood simulation gif.
+    """
+
+    frames=[]
+    gif_dir = '{}_gif'.format(site_name)
+    if not os.path.exists(gif_dir):
+        os.makedirs(gif_dir)
+
+        for i, threshold_da in enumerate(site_dictionary['threshold_lidar_das']):
+            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+            plot_model(model=threshold_da,
+                       title='Inundation at {} with increasing water levels'.format(site_name),
+                       cbar_label='Relative Elevation (m)',
+                       coarsen=False,
+                       fig=fig, ax=ax,
+                       cmap='viridis')
+
+            # Save plot frames to gif dir
+            fig_path=os.path.join(gif_dir, '{site}_step_{i}.jpg'.format(site=site_name, i=i))
+            fig.savefig(fig_path)
+    
+    # Create gif of the plot frames
+    for image in sorted(glob.glob(gif_dir + '/*.jpg'), key=numericalSort):
+        frames.append(Image.open(image))
+        
+    frame_one = frames[0]
+    frames[0].save('{}_flood.gif'.format(site_name), format="GIF", 
+                   append_images=frames[1:], save_all=True, duration=300, loop=0)
+    # Path to the gif file
+    gif_path = os.path.join('{}_flood.gif'.format(site_name))
+    return gif_path
