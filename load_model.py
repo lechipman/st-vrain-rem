@@ -441,18 +441,19 @@ def plot_hists(model, titles, main_title, color, fig, ax):
     fig.supxlabel('Elevation (m)', fontsize=16)
     fig.supylabel('Frequency', fontsize=16)
 
-# Function to create inundation dataarrays
-def flood_map(threshold_values, uav_rem, lidar_rem):
+
+# Function to create flood map arrays - need to update pixel size/area
+def flood_map(threshold_values, lidar_rem):
     """Creates lists of floodmaps and inundated area
     
     Parameters
     ------------
-    threshold_values: list
-        A list of the water level threshold values (int).
+    thresholds: list
+        A list of the water level thresholds.
     uav_rem: dataarray
-        Dataarray of the UAV REM for one site.
+        Dataarray of the UAV REM for a site.
     lidar_rem: dataarray
-        Dataarray of the LiDAR REM for one site.
+        Dataarray of the LiDAR REM for a site.
         
     Returns
     -----------
@@ -460,6 +461,8 @@ def flood_map(threshold_values, uav_rem, lidar_rem):
         A dictionary containing lists of uav and lidar floodmaps 
         and inundated areas.
     """
+    
+    
     threshold_lidar_das = []
     threshold_uav_das = []
     uav_area_list = []
@@ -467,22 +470,22 @@ def flood_map(threshold_values, uav_rem, lidar_rem):
     
     for threshold in threshold_values:
         # The threshold da is all points > threshold
-        threshold_uav_da=(uav_rem.where(uav_rem > threshold))
+        ##threshold_uav_da=(uav_rem.where(uav_rem > threshold))
         threshold_lidar_da=(lidar_rem.where(lidar_rem > threshold))
-        
         # Add threshold da to list
-        threshold_uav_das.append(threshold_uav_da)
+        ##threshold_uav_das.append(threshold_uav_da)
         threshold_lidar_das.append(threshold_lidar_da)
         
         # Compute pixel area based on resolution - use lidar_dtm values for now 2.5 ft = 0.762 m
-        uav_pixel_area = 0.02085**2
+        ##uav_pixel_area = 0.020850267865945408**2
         lidar_pixel_area =  0.762**2
 
-        # Compute area inundated ( nan values*pixel area) and add to list- uav
-        total_uav_count = uav_rem.size
-        valid_uav_count = int(threshold_uav_da.count().compute())
-        uav_area_list.append(
-            (total_uav_count - valid_uav_count)*uav_pixel_area)
+        # Compute area inundated - uav
+        ##total_uav_count = uav_rem.size
+        ##valid_uav_count = int(threshold_uav_da.count().compute())
+        # Add inundated area to list = nan values*pixel area
+        ##uav_area_list.append(
+            ##(total_uav_count - valid_uav_count)*uav_pixel_area)
 
         # Compute area inundated - lidar
         total_lidar_count = lidar_rem.size
@@ -493,12 +496,35 @@ def flood_map(threshold_values, uav_rem, lidar_rem):
         # Create a dictionary to store the lists of dataarrays
         flood_dictionary = {'threshold_uav_das': threshold_uav_das,
                      'threshold_lidar_das': threshold_lidar_das,
-                     'uav_area_list': uav_area_list,
+                     ##'uav_area_list': uav_area_list,
                      'lidar_area_list': lidar_area_list}
     
     return flood_dictionary
 
 
+# ADefine plots for simulation
+def plot_floodmap(plot_da, site, vmin, vmax):
+    ###
+    # Plots the floodmap at each threshold
+    ###
+    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+    im = plot_da.plot(ax=ax, add_colorbar=False, 
+                      cmap='viridis', robust=True, 
+                      vmin=np.nanmin(plot_da), vmax=np.nanmax(plot_da))
+    cbar = fig.colorbar(im)
+    cbar.set_label('Relative Elevation (m)', fontsize=16)
+    ax.set_title('Inundation at {} over increasing water levels'.format(site),
+          fontsize=20)
+  
+    # Hide x and y axes labels and ticks
+    ax.xaxis.set_tick_params(labelbottom=False)
+    ax.yaxis.set_tick_params(labelleft=False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.legend('off')
+    ax.axis('off')
+    plt.show()
+    
 # Function to sort image files numerically
 def numericalSort(value):
     """Sorts files by name numerically"""
